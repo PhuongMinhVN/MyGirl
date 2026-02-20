@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Có một cuộc hẹn dành cho em</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF7E67;
+            --secondary: #FFB3A6;
+            --bg-color: #FFF3E0;
+            --text-dark: #4A4A4A;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(255, 126, 103, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--secondary) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 2px solid white;
+        }
+
+        .card.hidden {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+            pointer-events: none;
+            position: absolute;
+            width: calc(100% - 40px);
+        }
+
+        .emoji-header {
+            font-size: 50px;
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+            display: inline-block;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-15px);
+            }
+
+            60% {
+                transform: translateY(-7px);
+            }
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #666;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #FFE4E1;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(255, 126, 103, 0.1);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(255, 126, 103, 0.3);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 126, 103, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Group Buttons for Phase 2 */
+        .buttons-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-yes {
+            background: #4cd137;
+            box-shadow: 0 4px 15px rgba(76, 209, 55, 0.3);
+            flex: 1;
+        }
+
+        .btn-no {
+            background: #718093;
+            box-shadow: 0 4px 15px rgba(113, 128, 147, 0.3);
+            flex: 1;
+        }
+
+        /* Food Grid for Phase 3 */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .food-item {
+            background: white;
+            border: 2px solid #FFE4E1;
+            border-radius: 16px;
+            padding: 15px 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .food-item:hover {
+            border-color: var(--primary);
+            background: #FFF5F5;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 126, 103, 0.1);
+        }
+
+        .food-emoji {
+            font-size: 35px;
+        }
+
+        .food-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+
+        /* Custom Alert */
+        .toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            top: 30px;
+        }
+
+        .floating-icon {
+            position: fixed;
+            pointer-events: none;
+            animation: floatUp 4s linear forwards;
+            opacity: 0.7;
+            font-size: 24px;
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .spin-loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285F4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast" class="toast">⚠️ Nhập tên vào đã chứ bạn êy!</div>
+
+    <div class="container">
+        <!-- Bước 1: Nhập tên -->
+        <div id="step-1" class="card">
+            <span class="emoji-header">💌</span>
+            <h1>Chào đằng ấy!</h1>
+            <p>Hôm nay trông cậu xinh quá, tớ có một chuyện quan trọng muốn hỏi cậu...</p>
+            <input type="text" id="nameInput" placeholder="Nhập tên cậu (hoặc biệt danh) vô đây nè" autocomplete="off">
+            <button class="btn" id="btn-next" onclick="goToStep2()">Xem câu hỏi 👀</button>
+            <button class="btn" id="btn-google" onclick="fakeGoogleLogin()"
+                style="margin-top: 15px; background: white; color: #555; font-size: 16px; display: flex; justify-content: center; align-items: center; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
+                    width="20" style="margin-right: 10px;">
+                Tạo link Gửi bằng Google
+            </button>
+        </div>
+
+        <!-- Bước 2: Chốt đơn -->
+        <div id="step-2" class="card hidden">
+            <span class="emoji-header">🍲</span>
+            <h1><span id="displayName"></span> ơi!</h1>
+            <p>Tối nay hai đứa mình đi ăn gì đó ngon ngon nhé? Anh bao! 💸</p>
+            <div class="buttons-group">
+                <button class="btn btn-yes" onclick="goToStep3()">Đi luôn 🤤</button>
+                <button class="btn btn-no" id="noBtn">Không (Béo) 🐷</button>
+            </div>
+        </div>
+
+        <!-- Bước 3: Chọn món -->
+        <div id="step-3" class="card hidden">
+            <span class="emoji-header">😋</span>
+            <h1>Tuyệt vờiiii!</h1>
+            <p>Vậy công chúa <span id="displayName2"></span> muốn ăn món gì tối nay? (Nhấn để chọn nha)</p>
+            <div class="food-grid">
+                <div class="food-item" onclick="finish('Lẩu Thái Tomyum 🥘')">
+                    <span class="food-emoji">🥘</span>
+                    <span class="food-name">Lẩu Thái</span>
+                </div>
+                <div class="food-item" onclick="finish('Thịt nướng xèo xèo 🥩')">
+                    <span class="food-emoji">🥩</span>
+                    <span class="food-name">Đồ Nướng</span>
+                </div>
+                <div class="food-item" onclick="finish('Sushi Cá Hồi 🍣')">
+                    <span class="food-emoji">🍣</span>
+                    <span class="food-name">Sushi Sashimi</span>
+                </div>
+                <div class="food-item" onclick="finish('Tà tư / Ăn vặt 🧋')">
+                    <span class="food-emoji">🧋</span>
+                    <span class="food-name">Trà sữa & Chè</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bước 4: Hoàn thành -->
+        <div id="step-4" class="card hidden">
+            <span class="emoji-header">🛵</span>
+            <h1>Chốt đơn! Nhận kèo!</h1>
+            <p>Đã ghi nhận món: <strong id="foodResult" style="color: var(--primary); font-size: 18px;"></strong></p>
+            <p>7h tối nay tớ qua đón cậu nhé. Mặc chiếc váy xinh nhất nha 🌸</p>
+            <button class="btn" onclick="createConfetti()">Háo hức quá 🎉</button>
+        </div>
+    </div>
+
+    <!-- Fake Google Login Popup -->
+    <div id="google-popup"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div
+            style="background: white; width: 90%; max-width: 400px; padding: 40px 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg" width="50"
+                style="margin-bottom: 20px;">
+            <h2 style="color: #202124; font-size: 24px; margin-bottom: 10px; font-weight: 500;">Đăng nhập</h2>
+            <p style="color: #5f6368; font-size: 15px; margin-bottom: 30px;">Tiếp tục với trang tỏ tình</p>
+            <div class="spin-loader" style="margin: 0 auto;"></div>
+            <p id="google-status" style="margin-top: 25px; color: #1a73e8; font-weight: 500; font-size: 16px;">Đang xác
+                thực thông tin...</p>
+        </div>
+    </div>
+
+    <!-- Hidden audio container -->
+    <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
+
+    <script>
+        let userName = '';
+        const noBtn = document.getElementById('noBtn');
+
+        // Khi tải trang kiểm tra xem có link chưa
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nameFromUrl = urlParams.get('name');
+            if (nameFromUrl) {
+                document.getElementById('nameInput').value = nameFromUrl;
+                document.getElementById('btn-google').style.display = 'none'; // Ẩn nút tạo link vì đây đã là người nhận
+            }
+        };
+
+        function fakeGoogleLogin() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+
+            if (!name) {
+                showToast();
+                return;
+            }
+
+            const popup = document.getElementById('google-popup');
+            const status = document.getElementById('google-status');
+
+            // Hiển thị popup đăng nhập Google
+            popup.style.display = 'flex';
+            status.innerText = "Đang kết nối để xử lý dữ liệu...";
+
+            setTimeout(() => {
+                status.innerText = "Đăng nhập thành công! Đang tạo link...";
+
+                setTimeout(() => {
+                    popup.style.display = 'none';
+
+                    // Tạo link
+                    const baseUrl = window.location.href.split('?')[0];
+                    const shareableLink = baseUrl + '?name=' + encodeURIComponent(name);
+
+                    // Hiện prompt thông báo
+                    prompt("Đã tạo link xong. Hãy COPY link bên dưới và gửi cho đằng ấy nhé! 👇", shareableLink);
+                }, 1500);
+            }, 1800);
+        }
+
+        // Hàm chuyển sang Bước 2
+        function goToStep2() {
+            const input = document.getElementById('nameInput');
+            userName = input.value.trim();
+
+            if (!userName) {
+                showToast();
+                return;
+            }
+
+            document.getElementById('displayName').innerText = userName;
+            document.getElementById('displayName2').innerText = userName;
+
+            switchCard('step-1', 'step-2');
+
+            // Phát nhạc trực tiếp bằng thẻ Audio HTML5 (cách chắc chắn nhất)
+            try {
+                const music = document.getElementById('bg-music');
+                music.volume = 0.5; // Điều chỉnh âm lượng (0.0 đến 1.0)
+                music.play();
+            } catch (error) {
+                console.log("Browser still blocked audio", error);
+            }
+        }
+
+        // Hàm chuyển sang Bước 3
+        function goToStep3() {
+            switchCard('step-2', 'step-3');
+        }
+
+        // Hàm chốt món (Bước 4)
+        function finish(foodName) {
+            document.getElementById('foodResult').innerText = foodName;
+            switchCard('step-3', 'step-4');
+
+            // Bắn pháo bông icon đồ ăn
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => spawnFloatingIcon(['🍡', '🍗', '🍕', '🍔'][Math.floor(Math.random() * 4)]), i * 150);
+            }
+        }
+
+        // Logic chuyển thẻ mượt mà
+        function switchCard(hideId, showId) {
+            const hideCard = document.getElementById(hideId);
+            const showCard = document.getElementById(showId);
+
+            hideCard.style.opacity = '0';
+            hideCard.style.transform = 'scale(0.9) translateY(-20px)';
+
+            setTimeout(() => {
+                hideCard.style.display = 'none';
+                showCard.classList.remove('hidden');
+                // Force reflow
+                void showCard.offsetWidth;
+                showCard.style.opacity = '1';
+                showCard.style.transform = 'scale(1) translateY(0)';
+            }, 300); // Đợi CSS transition chạy
+        }
+
+        // Thông báo lỗi
+        let toastObj;
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            clearTimeout(toastObj);
+            toastObj = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Hiệu ứng "Không" né tránh
+        const moveNoButton = (e) => {
+            if (e) e.preventDefault();
+
+            const maxX = window.innerWidth - noBtn.offsetWidth;
+            const maxY = window.innerHeight - noBtn.offsetHeight;
+
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            if (noBtn.parentElement !== document.body) {
+                noBtn.style.width = noBtn.offsetWidth + 'px';
+                noBtn.style.height = noBtn.offsetHeight + 'px';
+                document.body.appendChild(noBtn);
+            }
+
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            noBtn.style.zIndex = '9999';
+        };
+
+        noBtn.addEventListener('mouseover', moveNoButton);
+        noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
+        noBtn.addEventListener('click', moveNoButton);
+
+        // Hiệu ứng icon bay bay phía sau
+        function spawnFloatingIcon(iconChar = '✨') {
+            const icon = document.createElement('div');
+            icon.className = 'floating-icon';
+            icon.innerText = iconChar;
+            icon.style.left = Math.random() * 100 + 'vw';
+            icon.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            document.body.appendChild(icon);
+            setTimeout(() => icon.remove(), 6000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => spawnFloatingIcon(['💖', '🌸', '✨', '🎉'][Math.floor(Math.random() * 4)]), i * 100);
+            }
+        }
+
+        setInterval(() => spawnFloatingIcon(['✨', '🫧', '💨'][Math.floor(Math.random() * 3)]), 800);
+    </script>
+</body>
+
+</html>
