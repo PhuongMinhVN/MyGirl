@@ -391,7 +391,33 @@
             <h1>Chốt đơn! Nhận kèo!</h1>
             <p>Đã ghi nhận món: <strong id="foodResult" style="color: var(--primary); font-size: 18px;"></strong></p>
             <p>7h tối nay tớ qua đón cậu nhé. Mặc chiếc váy xinh nhất nha 🌸</p>
-            <button class="btn" onclick="createConfetti()">Háo hức quá 🎉</button>
+            <button class="btn" onclick="goToStep5()">Háo hức quá 🎉</button>
+        </div>
+
+        <!-- Bước 5: Hỏi địa chỉ -->
+        <div id="step-5" class="card hidden">
+            <span class="emoji-header">📍</span>
+            <h1>Cho tớ xin địa chỉ đón công chúa nha? 🏡</h1>
+            <p>Ghi rõ địa chỉ (hoặc khung giờ) tớ qua rước nhé!</p>
+            <input type="text" id="addressInput" placeholder="Ví dụ: 123 Đường A, 7h tối..." autocomplete="off">
+            <button class="btn" onclick="goToStep6()">Chốt sổ 🚀</button>
+        </div>
+
+        <!-- Bước 6: Giấy chứng nhận -->
+        <div id="step-6" class="card hidden">
+            <div
+                style="border: 2px dashed var(--primary); padding: 20px; border-radius: 15px; background: rgba(255,107,129,0.05);">
+                <span class="emoji-header" style="font-size: 40px; animation: none;">📜</span>
+                <h1 style="font-size: 22px;">Giấy Chứng Nhận Hẹn Hò</h1>
+                <p style="font-size: 15px; margin-bottom: 10px;">Chứng nhận: <strong id="displayName3"
+                        style="color: var(--primary); font-size: 18px;"></strong></p>
+                <p style="font-size: 14px; margin-bottom: 20px; line-height: 1.5;">Đã chính thức dính "Bùa Yêu" và đồng
+                    ý kèo hẹn hò tối nay.</p>
+                <p style="font-size: 13px; font-style: italic; color: #777;">Vui lòng CHỤP MÀN HÌNH tờ giấy này và gửi
+                    cho tớ để xác nhận vé nha! 💖</p>
+            </div>
+            <button class="btn" style="margin-top:20px; background: #0084ff;" onclick="openMessenger()">Gửi ảnh qua
+                Messenger 💬</button>
         </div>
     </div>
 
@@ -460,6 +486,7 @@
 
     <script>
         let userName = '';
+        let adminEmail = '';
         const noBtn = document.getElementById('noBtn');
 
         let foodOptions = [
@@ -490,11 +517,15 @@
             const urlParams = new URLSearchParams(window.location.search);
             const nameFromUrl = urlParams.get('name');
             const foodsFromUrl = urlParams.get('foods');
+            const emailFromUrl = urlParams.get('email');
 
             if (foodsFromUrl) {
                 try {
                     foodOptions = JSON.parse(decodeURIComponent(foodsFromUrl));
                 } catch (e) { console.log('Parsed custom food error', e); }
+            }
+            if (emailFromUrl) {
+                adminEmail = decodeURIComponent(emailFromUrl);
             }
             // Khởi tạo hiển thị danh sách món ăn
             renderFoodGrid();
@@ -529,10 +560,13 @@
                 setTimeout(() => {
                     popup.style.display = 'none';
 
-                    // Tạo link có chứa cả tên và option món ăn
+                    // Tạo link có chứa cả tên, option món ăn và email
                     const baseUrl = window.location.href.split('?')[0];
                     const customFoodsEncoded = encodeURIComponent(JSON.stringify(foodOptions));
-                    const shareableLink = baseUrl + '?name=' + encodeURIComponent(name) + '&foods=' + customFoodsEncoded;
+                    let shareableLink = baseUrl + '?name=' + encodeURIComponent(name) + '&foods=' + customFoodsEncoded;
+                    if (adminEmail) {
+                        shareableLink += '&email=' + encodeURIComponent(adminEmail);
+                    }
 
                     // Hiện popup copy link thay vì prompt mặc định
                     document.getElementById('generated-link').value = shareableLink;
@@ -576,6 +610,12 @@
                     </div>
                 `;
             });
+            container.innerHTML += `
+                <div style="margin-top: 15px;">
+                    <p style="font-size: 13px; margin-bottom: 5px; color: #555; text-align: left;">Email nhận thông báo khi người ấy đồng ý (Không bắt buộc):</p>
+                    <input type="email" id="edit-admin-email" placeholder="Ví dụ: crush.cua.toi@gmail.com" value="${adminEmail}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+                </div>
+            `;
             document.getElementById('admin-edit-modal').style.display = 'flex';
         }
 
@@ -589,9 +629,10 @@
                 });
             }
             foodOptions = newArray;
+            adminEmail = document.getElementById('edit-admin-email').value.trim();
             renderFoodGrid();
             closeModal('admin-edit-modal');
-            alert('Đã lưu Menu thành công ✅!\n\nLưu ý: Để Menu này gắn vĩnh viễn với link, bạn cần gõ tên vào Trang chủ và nhấn nút "Tạo link Gửi bằng Google" một lần nữa!');
+            alert('Đã lưu Cấu hình thành công ✅!\n\nLưu ý: Để Cấu hình này gắn vĩnh viễn với link, bạn cần gõ tên Crush vào Trang chủ và nhấn nút "Tạo link Gửi bằng Google" một lần nữa!');
         }
 
         // --- Logic Copy Link ---
@@ -647,6 +688,7 @@
 
         // Hàm chuyển sang Bước 3
         function goToStep3() {
+            noBtn.style.display = 'none'; // Giấu nút đi khi qua màn mới
             switchCard('step-2', 'step-3');
         }
 
@@ -681,11 +723,14 @@
 
         // Thông báo lỗi
         let toastObj;
-        function showToast() {
+        function showToast(msg = '⚠️ Nhập tên vào đã chứ bạn êy!') {
             const toast = document.getElementById('toast');
+            toast.innerText = msg;
             toast.classList.add('show');
             clearTimeout(toastObj);
-            toastObj = setTimeout(() => toast.classList.remove('show'), 2500);
+            toastObj = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
         }
 
         // Hiệu ứng "Không" né tránh
@@ -725,10 +770,60 @@
             setTimeout(() => icon.remove(), 6000);
         }
 
-        function createConfetti() {
-            for (let i = 0; i < 8; i++) {
+        let hasSentEmail = false;
+
+        function goToStep5() {
+            switchCard('step-4', 'step-5');
+        }
+
+        function goToStep6() {
+            const address = document.getElementById('addressInput').value.trim();
+            if (!address) {
+                showToast('⚠️ Nhớ ghi địa chỉ nha bạn êy!');
+                return;
+            }
+
+            document.getElementById('displayName3').innerText = userName;
+            switchCard('step-5', 'step-6');
+
+            // Bắn pháo bông tung tóe
+            createConfettiFast();
+
+            // Gửi email nếu có cài đặt
+            if (adminEmail && !hasSentEmail) {
+                const btn = document.querySelector('#step-6 button');
+                const oldText = btn.innerText;
+                btn.innerText = "Đang gửi tín hiệu... 💌";
+                fetch("https://formsubmit.co/ajax/" + adminEmail, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: "MyGirl Notification 🌸",
+                        subject: `💕 Tin mừng: ${userName} đã đồng ý hẹn hò và Chốt sổ!`,
+                        message: `Bạn ơi ơi, người ấy (${userName}) đã chốt kèo!\n\n🍱 Món ăn đã chốt: ${document.getElementById('foodResult').innerText}\n📍 Địa chỉ đón / Khung giờ: ${address}\n\nChuẩn bị vuốt keo xịt nước hoa lên đường thôi nào! 🏍️`
+                    })
+                }).then(() => {
+                    hasSentEmail = true;
+                    btn.innerText = oldText;
+                }).catch(() => {
+                    btn.innerText = oldText;
+                });
+            }
+        }
+
+        function createConfettiFast() {
+            for (let i = 0; i < 15; i++) {
                 setTimeout(() => spawnFloatingIcon(['💖', '🌸', '✨', '🎉'][Math.floor(Math.random() * 4)]), i * 100);
             }
+        }
+
+        function openMessenger() {
+            // Mở FB messenger nhanh trên Mobile
+            alert("Nhanh tay Mở Zalo hay Messenger gửi ngay bức ảnh bạn vừa CHỤP MÀN HÌNH sang cho tớ nhé! Cảm ơn công chúa! 🥰");
+            window.location.href = `fb-messenger://`;
         }
 
         setInterval(() => spawnFloatingIcon(['✨', '🫧', '💨'][Math.floor(Math.random() * 3)]), 800);
