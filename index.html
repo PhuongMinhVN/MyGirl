@@ -10,12 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #FF7E67;
-            --secondary: #FFB3A6;
-            --bg-color: #FFF3E0;
+            --primary: #FF6B81;
+            --secondary: #FFA3B1;
+            --bg-color: #FFF0F3;
             --text-dark: #4A4A4A;
             --card-bg: rgba(255, 255, 255, 0.9);
-            --shadow: 0 10px 30px rgba(255, 126, 103, 0.15);
+            --shadow: 0 10px 30px rgba(255, 107, 129, 0.15);
         }
 
         * {
@@ -274,10 +274,78 @@
                 transform: rotate(360deg);
             }
         }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: left;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-box h2 {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .admin-food-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .admin-food-row input {
+            padding: 8px;
+            font-size: 14px;
+            margin-bottom: 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            width: 100%;
+        }
     </style>
 </head>
 
 <body>
+    <button class="settings-btn" id="settingsBtn" onclick="openAdminLogin()">⚙️</button>
     <div id="toast" class="toast">⚠️ Nhập tên vào đã chứ bạn êy!</div>
 
     <div class="container">
@@ -312,23 +380,8 @@
             <span class="emoji-header">😋</span>
             <h1>Tuyệt vờiiii!</h1>
             <p>Vậy công chúa <span id="displayName2"></span> muốn ăn món gì tối nay? (Nhấn để chọn nha)</p>
-            <div class="food-grid">
-                <div class="food-item" onclick="finish('Lẩu Thái Tomyum 🥘')">
-                    <span class="food-emoji">🥘</span>
-                    <span class="food-name">Lẩu Thái</span>
-                </div>
-                <div class="food-item" onclick="finish('Thịt nướng xèo xèo 🥩')">
-                    <span class="food-emoji">🥩</span>
-                    <span class="food-name">Đồ Nướng</span>
-                </div>
-                <div class="food-item" onclick="finish('Sushi Cá Hồi 🍣')">
-                    <span class="food-emoji">🍣</span>
-                    <span class="food-name">Sushi Sashimi</span>
-                </div>
-                <div class="food-item" onclick="finish('Tà tư / Ăn vặt 🧋')">
-                    <span class="food-emoji">🧋</span>
-                    <span class="food-name">Trà sữa & Chè</span>
-                </div>
+            <div class="food-grid" id="foodGridContainer">
+                <!-- Javascript will render options here -->
             </div>
         </div>
 
@@ -339,6 +392,34 @@
             <p>Đã ghi nhận món: <strong id="foodResult" style="color: var(--primary); font-size: 18px;"></strong></p>
             <p>7h tối nay tớ qua đón cậu nhé. Mặc chiếc váy xinh nhất nha 🌸</p>
             <button class="btn" onclick="createConfetti()">Háo hức quá 🎉</button>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 350px;">
+            <h2>Đăng nhập Cài đặt ⚙️</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Mật khẩu mặc định là: <strong>admin</strong></p>
+            <input type="password" id="adminPassword" placeholder="Nhập mật khẩu..."
+                style="margin-bottom: 15px; width: 100%;">
+            <button class="btn" style="padding: 12px;" onclick="checkAdminPassword()">Đăng nhập</button>
+            <button class="btn"
+                style="padding: 12px; margin-top: 10px; background: #ddd; color: #333; box-shadow: none;"
+                onclick="closeModal('admin-login-modal')">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Admin Edit Modal -->
+    <div id="admin-edit-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2>Chỉnh sửa Menu Món ăn 🍱</h2>
+            <p style="font-size: 14px; margin-bottom: 15px;">Thay đổi danh sách 4 món ăn bên dưới theo ý bạn:</p>
+            <div id="adminFoodRows"></div>
+            <button class="btn" style="padding: 12px; margin-top: 15px;" onclick="saveFoodSettings()">Lưu cấu
+                hình</button>
+            <button class="btn"
+                style="padding: 12px; margin-top: 10px; background: #ddd; color: #333; box-shadow: none;"
+                onclick="closeModal('admin-edit-modal')">Đóng</button>
         </div>
     </div>
 
@@ -357,6 +438,23 @@
         </div>
     </div>
 
+    <!-- Copy Link Modal -->
+    <div id="copy-link-modal" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <h2>🎉 Đã tạo link thành công!</h2>
+            <p style="font-size: 15px; margin-bottom: 15px; color: #555;">Hãy copy link đặc biệt bên dưới và gửi cho
+                đằng ấy nhé!</p>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="generated-link" readonly
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 13px; color: #555; background: #f9f9f9; text-align: left;">
+            </div>
+            <button class="btn" style="padding: 12px; background: #2ed573; margin-bottom: 10px;" id="copy-btn"
+                onclick="copyLink()">📋 Copy Link</button>
+            <button class="btn" style="padding: 12px; background: #ddd; color: #333; box-shadow: none;"
+                onclick="closeModal('copy-link-modal')">Đóng</button>
+        </div>
+    </div>
+
     <!-- Hidden audio container -->
     <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
 
@@ -364,13 +462,48 @@
         let userName = '';
         const noBtn = document.getElementById('noBtn');
 
+        let foodOptions = [
+            { emoji: '🥘', shortName: 'Lẩu Thái', fullName: 'Lẩu Thái Tomyum 🥘' },
+            { emoji: '🥩', shortName: 'Đồ Nướng', fullName: 'Thịt nướng xèo xèo 🥩' },
+            { emoji: '🍣', shortName: 'Sushi', fullName: 'Sushi Cá Hồi 🍣' },
+            { emoji: '🧋', shortName: 'Trà Sữa', fullName: 'Tà tư / Ăn vặt 🧋' }
+        ];
+
+        function renderFoodGrid() {
+            const container = document.getElementById('foodGridContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            foodOptions.forEach((f) => {
+                const item = document.createElement('div');
+                item.className = 'food-item';
+                item.onclick = () => finish(f.fullName);
+                item.innerHTML = `
+                    <span class="food-emoji">${f.emoji}</span>
+                    <span class="food-name">${f.shortName}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
         // Khi tải trang kiểm tra xem có link chưa
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const nameFromUrl = urlParams.get('name');
+            const foodsFromUrl = urlParams.get('foods');
+
+            if (foodsFromUrl) {
+                try {
+                    foodOptions = JSON.parse(decodeURIComponent(foodsFromUrl));
+                } catch (e) { console.log('Parsed custom food error', e); }
+            }
+            // Khởi tạo hiển thị danh sách món ăn
+            renderFoodGrid();
+
             if (nameFromUrl) {
                 document.getElementById('nameInput').value = nameFromUrl;
                 document.getElementById('btn-google').style.display = 'none'; // Ẩn nút tạo link vì đây đã là người nhận
+                const settingsBtn = document.getElementById('settingsBtn');
+                if (settingsBtn) settingsBtn.style.display = 'none'; // Ẩn nút setting phía người nhận
             }
         };
 
@@ -396,14 +529,95 @@
                 setTimeout(() => {
                     popup.style.display = 'none';
 
-                    // Tạo link
+                    // Tạo link có chứa cả tên và option món ăn
                     const baseUrl = window.location.href.split('?')[0];
-                    const shareableLink = baseUrl + '?name=' + encodeURIComponent(name);
+                    const customFoodsEncoded = encodeURIComponent(JSON.stringify(foodOptions));
+                    const shareableLink = baseUrl + '?name=' + encodeURIComponent(name) + '&foods=' + customFoodsEncoded;
 
-                    // Hiện prompt thông báo
-                    prompt("Đã tạo link xong. Hãy COPY link bên dưới và gửi cho đằng ấy nhé! 👇", shareableLink);
+                    // Hiện popup copy link thay vì prompt mặc định
+                    document.getElementById('generated-link').value = shareableLink;
+                    document.getElementById('copy-btn').innerText = "📋 Copy Link";
+                    document.getElementById('copy-btn').style.background = "#2ed573";
+                    document.getElementById('copy-btn').style.color = "white";
+                    document.getElementById('copy-link-modal').style.display = 'flex';
                 }, 1500);
             }, 1800);
+        }
+
+        // --- Logic phần Cài đặt Admin ---
+        function openAdminLogin() {
+            document.getElementById('admin-login-modal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function checkAdminPassword() {
+            const pwd = document.getElementById('adminPassword').value;
+            if (pwd === 'admin') {
+                closeModal('admin-login-modal');
+                document.getElementById('adminPassword').value = '';
+                openAdminEdit();
+            } else {
+                alert('Sai mật khẩu! Mật khẩu mặc định là: admin');
+            }
+        }
+
+        function openAdminEdit() {
+            const container = document.getElementById('adminFoodRows');
+            container.innerHTML = '';
+            foodOptions.forEach((f, idx) => {
+                container.innerHTML += `
+                    <div class="admin-food-row">
+                        <input type="text" id="edit-emoji-${idx}" placeholder="Emoji" value="${f.emoji}" style="flex: 1;">
+                        <input type="text" id="edit-short-${idx}" placeholder="Tên món" value="${f.shortName}" style="flex: 2;">
+                        <input type="text" id="edit-full-${idx}" placeholder="Tên chốt đơn" value="${f.fullName}" style="flex: 3;">
+                    </div>
+                `;
+            });
+            document.getElementById('admin-edit-modal').style.display = 'flex';
+        }
+
+        function saveFoodSettings() {
+            let newArray = [];
+            for (let i = 0; i < 4; i++) {
+                newArray.push({
+                    emoji: document.getElementById(`edit-emoji-${i}`).value.trim(),
+                    shortName: document.getElementById(`edit-short-${i}`).value.trim(),
+                    fullName: document.getElementById(`edit-full-${i}`).value.trim()
+                });
+            }
+            foodOptions = newArray;
+            renderFoodGrid();
+            closeModal('admin-edit-modal');
+            alert('Đã lưu Menu thành công ✅!\n\nLưu ý: Để Menu này gắn vĩnh viễn với link, bạn cần gõ tên vào Trang chủ và nhấn nút "Tạo link Gửi bằng Google" một lần nữa!');
+        }
+
+        // --- Logic Copy Link ---
+        function copyLink() {
+            const linkInput = document.getElementById('generated-link');
+            // Cố gắng sử dụng clipboard api hiện đại
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(linkInput.value).then(showCopySuccess);
+            } else {
+                // Fallback cho trình duyệt cũ hoặc không HTTPS
+                linkInput.select();
+                linkInput.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    showCopySuccess();
+                } catch (e) {
+                    alert('Lỗi: Trình duyệt của bạn không hỗ trợ tự động copy, vui lòng copy link thủ công!');
+                }
+            }
+        }
+
+        function showCopySuccess() {
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.innerText = "✅ Đã Copy vào khay nhớ!";
+            copyBtn.style.background = "#ced6e0";
+            copyBtn.style.color = "#2f3542";
         }
 
         // Hàm chuyển sang Bước 2
